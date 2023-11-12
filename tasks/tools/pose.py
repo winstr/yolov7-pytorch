@@ -6,7 +6,13 @@ Author: Seunghyeon Kim (winstr)
 -------------------------------
 ...
 """
-from typing import Iterable
+# ↓ Temporary
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).absolute().parents[2]/"yolov7"))
+# ↑ Temporary
+from typing import Iterable, Tuple, List
+from dataclasses import dataclass
 
 import cv2
 import numpy as np
@@ -15,6 +21,47 @@ from torchvision import transforms
 
 from yolov7.utils.general import non_max_suppression_kpt
 from yolov7.utils.plots import output_to_keypoint
+
+
+@dataclass
+class Point:
+    x: int  # x coordinate
+    y: int  # y coordinate
+
+
+@dataclass
+class BoundingBox:
+    pt0: Point  # point 0
+    pt1: Point  # point 1
+    cnf: float  # confidence
+
+
+@dataclass
+class Keypoint:
+    kpt: Point  # keypoint
+    cnf: float  # confidence
+
+
+@dataclass
+class Pose:
+    bbox: BoundingBox
+    nose: Keypoint
+    l_eye: Keypoint
+    r_eye: Keypoint
+    l_ear: Keypoint
+    r_ear: Keypoint
+    l_shoulder: Keypoint
+    r_shoulder: Keypoint
+    l_elbow: Keypoint
+    r_elbow: Keypoint
+    l_wrist: Keypoint
+    r_wrist: Keypoint
+    l_hip: Keypoint
+    r_hip: Keypoint
+    l_knee: Keypoint
+    r_knee: Keypoint
+    l_ankle: Keypoint
+    r_ankle: Keypoint
 
 
 class PoseEstimator():
@@ -76,11 +123,13 @@ class PoseEstimator():
 
         poses = []
         for pred in preds:
-            cx, cy, w, h, box_conf = pred[2:7]
+            cx, cy, w, h, cnf = pred[2:7]
             x0, y0, x1, y1 = cxcywh2xyxy(cx, cy, w, h)
-            kpts = pred[7:].tolist()
-            pose = x0, y0, x1, y1, box_conf, kpts
-            poses.append(pose)
+            bbox = BoundingBox(pt0=(x0, y0), pt1=(x1, y1), cnf=cnf)
+            kpts = []
+            for x, y, cnf in pred[7:].reshape(17, 3):
+                kpts.append(Keypoint((int(x), int(y)), cnf))
+            poses.append(Pose(bbox, kpts))
         return poses
 
     def estimate_pose(self, img: np.ndarray):
