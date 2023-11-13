@@ -44,7 +44,7 @@ def xywh_to_xyxy(xywh: np.ndarray) -> np.ndarray:
 class PoseEstimator():
 
     @staticmethod
-    def draw_poses(img: np.ndarray, preds: np.ndarray):
+    def visualization(img: np.ndarray, preds: np.ndarray):
 
         def draw_bbox(pred):
             x0, y0, x1, y1 = xywh_to_xyxy(pred[:4]).astype(int)
