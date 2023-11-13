@@ -21,8 +21,12 @@ def download_weight():
 
 if __name__ == "__main__":
     download_weight()
-    img = cv2.imread("running.jpg")
+    img = cv2.imread("running.png")
     estimator = PoseEstimator(YOLOPOSE_PT)
 
-    poses = estimator.estimate_pose(img)
-    print(poses)
+    img_, preds = estimator.estimate_pose(img)
+    PoseEstimator.visualization(img_, preds)
+
+    cv2.imshow("res", img_)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
